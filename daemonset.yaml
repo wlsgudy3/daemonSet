@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ebpf-process-monitor
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: ebpf-process-monitor
+  template:
+    metadata:
+      labels:
+        name: ebpf-process-monitor
+    spec:
+      containers:
+        - name: ebpf-process-monitor
+          image: ebpf-process-monitor:latest
+          imagePullPolicy: Never
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /sys/fs/bpf
+              name: bpf
+              mountPropagation: Bidirectional
+            - mountPath: /lib/modules
+              name: lib-modules
+              mountPropagation: HostToContainer
+            - mountPath: /usr/src
+              name: usr-src
+              mountPropagation: HostToContainer
+      volumes:
+        - name: bpf
+          hostPath:
+            path: /sys/fs/bpf
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+        - name: usr-src
+          hostPath:
+            path: /usr/src
+      hostNetwork: true
+      hostPID: true
